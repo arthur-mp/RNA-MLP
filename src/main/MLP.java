@@ -33,7 +33,7 @@ public class MLP {
         Random random = new Random();
         for (int i = 0; i < amountNeuronsIntermediary + 1; i++) {
             for (int j = 0; j < amountOutput; j++) {
-                this.wO[i][j] = random.nextDouble() + Range_Max * 2 + Range_Min;
+                this.wO[i][j] = random.nextDouble() * Range_Max * 2 + Range_Min;
             }
         }
 
@@ -43,7 +43,7 @@ public class MLP {
         Random random = new Random();
         for (int i = 0; i < amountInput + 1; i++) {
             for (int j = 0; j < amountNeuronsIntermediary; j++) {
-                this.wH[i][j] = random.nextDouble() + Range_Max * 2 + Range_Min;
+                this.wH[i][j] = random.nextDouble() * Range_Max * 2 + Range_Min;
             }
         }
 

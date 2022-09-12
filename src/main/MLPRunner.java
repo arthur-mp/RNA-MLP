@@ -2,22 +2,35 @@ package main;
 
 import utils.DataBase;
 import utils.GenerateDataBase;
+import utils.GenerateDataBaseFlags;
 
 public class MLPRunner {
 
     public static void main(String[] args) throws Exception {
 
-        GenerateDataBase generateDataBase = new GenerateDataBase();
+        /*
+         *
+         * Default Bases
+         */
 
-        int neuronsIntermediary = 4;
-        double ni = 0.1;
+        // GenerateDataBase generateDataBase = new GenerateDataBase();
+
+        // DataBase[] dataBase = generateDataBase.generateDataBase("xor");
 
         /*
-         * Enter file name
-         * Files are in 'Date'
+         * 
+         * Flags Bases
          */
-        DataBase[] dataBase = generateDataBase.generateDataBase("xor");
 
+        GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags();
+
+        DataBase[] dataBase = generateDataBase.generateDataBase();
+
+
+        int neuronsIntermediary = 6;
+        double ni = 0.3;
+
+       
         MLP p = new MLP(dataBase[0].getX().length, dataBase[0].getY().length, neuronsIntermediary, ni);
 
         double erroEp = 0;
@@ -42,14 +55,5 @@ public class MLPRunner {
             System.out.println("Época: " + (e + 1) + " - erro: " + erroEp);
         }
 
-        double[][] w = p.getWO();
-        System.out.println("-----------------------------------------");
-        for (int j = 0; j < w[0].length; j++) {
-            System.out.printf("Neuronio: %d\n", j + 1);
-            for (int i = 0; i < w.length; i++) {
-                System.out.printf("Peso %d: %2f\n", i, w[i][j]);
-            }
-            System.out.println("-----------------------------------------");
-        }
     }
 }

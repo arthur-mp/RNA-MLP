@@ -22,7 +22,7 @@ public class GenerateDataBase {
         FileReader file = null;
 
         try {
-            file = new FileReader("./src/data/" + data + ".txt");
+            file = new FileReader("./src/data/default.bases/" + data + ".txt");
         } catch (FileNotFoundException e) {
             System.out.println("Error: " + e);
         }

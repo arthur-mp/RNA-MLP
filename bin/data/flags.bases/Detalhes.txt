@@ -1,0 +1,26 @@
+* Desconsiderar a primeira coluna (nome dos paises)
+
+**Criar HashMap para para as cores:
+
+[
+    red: 1
+    green: 2
+    blue: 3
+    gold: 4
+    white: 5
+    black: 6
+    orange: 7
+]
+
+***Para o caso da 7° coluna, ela corresponde aos neuronios:
+Criar uma HashMap para poder converter a entrada em 1 bit:
+[
+    0=Catholic:         10000000
+    1=Other Christian:  01000000
+    2=Muslim:           00100000
+    3=Buddhist:         00010000
+    4=Hindu:            00001000
+    5=Ethnic:           00000100
+    6=Marxist:          00000010 
+    7=Others:           00000001
+]
