@@ -15,6 +15,9 @@ public class MLP {
     private double[][] wO;
     private double[][] wH;
 
+    private double[] x;
+    private double[] H;
+
     private final static double Range_Max = 0.03;
     private final static double Range_Min = -0.03;
 
@@ -50,46 +53,8 @@ public class MLP {
     }
 
     public double[] learn(Double[] xIn, Double[] y) {
-        /*
-         * Copia do xIn para o x
-         */
-        double[] x = new double[xIn.length + 1];
-
-        for (int i = 0; i < xIn.length; i++) {
-            x[i] = xIn[i];
-        }
-        x[x.length - 1] = 1;
-
-        /*
-         * Calcula a saída da camada intermediária
-         * Representa a saída da camada intermediária
-         */
-        double[] H = new double[amountNeuronsIntermediary + 1];
-
-        for (int j = 0; j < amountNeuronsIntermediary; j++) {
-            for (int i = 0; i < x.length; i++) {
-                H[j] += (x[i] * wH[i][j]);
-            }
-
-            H[j] = FunctionActivation.sigmoidal(H[j]);
-        }
-
-        H[H.length - 1] = 1;
-
-
-        /*
-         * Calcula a saída obtida
-         */
-        double[] out = new double[amountOutput];
-
-        for (int j = 0; j < out.length; j++) {
-            for (int i = 0; i < H.length; i++) {
-                out[j] += H[i] * wO[i][j];
-            }
-
-            out[j] = FunctionActivation.sigmoidal(out[j]);
-        }
-
+        
+        double[] out = execute(xIn);
 
         /*
          * Calcula os deltas
@@ -129,6 +94,51 @@ public class MLP {
             for(int o = 0; o < amountOutput; o++){
                 wO[h][o] += (ni * deltaOut[o] * H[h]);
             }
+        }
+
+        return out;
+    }
+
+
+    public double[] execute(Double[] xIn){
+        /*
+         * Copia do xIn para o x
+         */
+        x = new double[xIn.length + 1];
+
+        for (int i = 0; i < xIn.length; i++) {
+            x[i] = xIn[i];
+        }
+        x[x.length - 1] = 1;
+
+        /*
+         * Calcula a saída da camada intermediária
+         * Representa a saída da camada intermediária
+         */
+        H = new double[amountNeuronsIntermediary + 1];
+
+        for (int j = 0; j < amountNeuronsIntermediary; j++) {
+            for (int i = 0; i < x.length; i++) {
+                H[j] += (x[i] * wH[i][j]);
+            }
+
+            H[j] = FunctionActivation.sigmoidal(H[j]);
+        }
+
+        H[H.length - 1] = 1;
+
+
+        /*
+         * Calcula a saída obtida
+         */
+        double[] out = new double[amountOutput];
+
+        for (int j = 0; j < out.length; j++) {
+            for (int i = 0; i < H.length; i++) {
+                out[j] += H[i] * wO[i][j];
+            }
+
+            out[j] = FunctionActivation.sigmoidal(out[j]);
         }
 
         return out;
