@@ -59,8 +59,7 @@ public class GenerateDataBaseFlags {
                 datas = data.split(",");
 
                 int index = Integer.parseInt(datas[colNeuron]);
-                List<String> value = basesDistributed.get(index);
-                value.add(data);
+                basesDistributed.get(index).add(data);
             }
 
         } catch (Exception e) {
