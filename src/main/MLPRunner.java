@@ -36,8 +36,8 @@ public class MLPRunner {
         List<DataBase> dataBaseTreino = generateDataBase.generateDataBase("./src/data/flags/bases/base75.txt");
         List<DataBase> dataBaseTeste = generateDataBase.generateDataBase("./src/data/flags/bases/base25.txt");
 
-        int neuronsIntermediary = 6;
-        double ni = 0.1;
+        int neuronsIntermediary = 16;
+        double ni = 0.001;
 
         MLP p = new MLP(dataBaseTreino.get(0).getX().length, dataBaseTreino.get(0).getY().length, neuronsIntermediary, ni);
 
@@ -107,7 +107,7 @@ public class MLPRunner {
                 erroClEpTeste += erroClAmTeste;
             }
 
-            System.out.println(e +": "+ erroEpTreino +"\t"+erroEpTeste);
+            System.out.println(e +"\t"+"ErroEpTreino: "+ erroEpTreino +"\t"+"ErroClEpTreino: "+ erroClEpTreino+"\t"+"ErroEpTeste: "+ erroEpTeste+"\t"+"ErroClEpTeste: "+ erroClEpTeste);
 
             dataTreino.add("" + (e + 1) + " "+erroEpTreino + "");
             dataTeste.add("" + (e + 1) + " "+erroEpTeste + "");

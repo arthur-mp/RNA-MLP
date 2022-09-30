@@ -28,7 +28,10 @@ public class GenerateDataBaseFlags {
     public List<DataBase> generateDataBase(String path) {
         createHashReligions();
         createHashColors();
-        readDataBase(path);
+        List<DataBase> listDataBase = readDataBase(path);
+        if(listDataBase != null){
+            return listDataBase;
+        }
         return this.dataBase;
     }
 
@@ -120,8 +123,9 @@ public class GenerateDataBaseFlags {
         }
     }
 
-    private void readDataBase(String path) {
+    private List<DataBase> readDataBase(String path) {
         FileReader file = null;
+        List<DataBase> newListDataBases = new ArrayList<>();
 
         try {
             if(path != null){
@@ -142,7 +146,7 @@ public class GenerateDataBaseFlags {
             Double[] out;
             DataBase newDataBase;
 
-            for (int i = 0; i < this.instances; i++) {
+            while(readFile.ready()){
                 datas = readFile.readLine().split(",");
 
                 in = new ArrayList<>();
@@ -166,11 +170,18 @@ public class GenerateDataBaseFlags {
                         in.toArray(new Double[in.size()]),
                         out);
 
-                this.dataBase.add(newDataBase);
+                newListDataBases.add(newDataBase);
             }
 
         } catch (Exception e) {
             System.out.println("Error: " + e);
+        }
+
+        if(path != null){
+            return newListDataBases;
+        }else{
+            this.dataBase = newListDataBases;
+            return null;
         }
     }
 
