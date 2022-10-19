@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,16 +21,18 @@ public class GenerateDataBaseFlags {
     private final int lengthY = 8;
     private final int instances = 194;
     private final int colNeuron = 6;
+    private final boolean balancing;
 
-    public GenerateDataBaseFlags() {
+    public GenerateDataBaseFlags(boolean balancing) {
         this.dataBase = new ArrayList<>();
+        this.balancing = balancing;
     }
 
     public List<DataBase> generateDataBase(String path) {
         createHashReligions();
         createHashColors();
         List<DataBase> listDataBase = readDataBase(path);
-        if(listDataBase != null){
+        if (listDataBase != null) {
             return listDataBase;
         }
         return this.dataBase;
@@ -76,6 +79,12 @@ public class GenerateDataBaseFlags {
         List<String> base75 = new ArrayList<>();
         List<String> base25 = new ArrayList<>();
 
+        List<List<String>> baseDistributed75 = new ArrayList<>();
+
+        for (int i = 0; i < 8; i++) {
+            baseDistributed75.add(new ArrayList<>());
+        }
+
         int limit;
         double valueLimit;
         List<String> base;
@@ -87,16 +96,69 @@ public class GenerateDataBaseFlags {
 
             limit = (int) Math.floor(valueLimit);
 
-            for (int j = 0; j < limit; j++) {
-                base75.add(base.get(j));
+            if (this.balancing) {
+                for (int k = 0; k < limit; k++) {
+                    baseDistributed75.get(i).add(base.get(k));
+                }
+            } else {
+                for (int j = 0; j < limit; j++) {
+                    base75.add(base.get(j));
+                }
             }
+
             for (int k = limit; k < base.size(); k++) {
                 base25.add(base.get(k));
             }
         }
 
+        if (this.balancing) {
+            base75 = generateBalancing(baseDistributed75);
+        }
+
+        Collections.shuffle(base25);
+        Collections.shuffle(base75);
         createFile(base75, "base75");
         createFile(base25, "base25");
+    }
+
+    // Gerar base 75 Balanceada
+    private List<String> generateBalancing(List<List<String>> baseDistributed75) {
+        List<String> base75 = new ArrayList<>();
+
+        // Identificar qual a categoria que possui mais amostra
+        int biggerCategory = 0;
+
+        for (int i = 0; i < baseDistributed75.size(); i++) {
+            if (baseDistributed75.get(i).size() > baseDistributed75.get(biggerCategory).size()) {
+                biggerCategory = i;
+            }
+        }
+
+        // Balancear a Base
+        for (int i = 0; i < baseDistributed75.size(); i++) {
+            if (i != biggerCategory) {
+                int index = 0;
+                final int indexFinal = baseDistributed75.get(i).size();
+                for (int j = baseDistributed75.get(i).size(); j < baseDistributed75.get(biggerCategory).size(); j++) {
+                    if(index < indexFinal){
+                        baseDistributed75.get(i).add(baseDistributed75.get(i).get(index));
+                        index++;
+                    }else{
+                        index = 0;
+                        baseDistributed75.get(i).add(baseDistributed75.get(i).get(index));
+                        index++;
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i < baseDistributed75.size(); i++){
+            for (int j = 0; j < baseDistributed75.get(i).size(); j++) {
+                base75.add(baseDistributed75.get(i).get(j));
+            }
+        }
+
+        return base75;
     }
 
     private void createFile(List<String> base, String name) {
@@ -128,9 +190,9 @@ public class GenerateDataBaseFlags {
         List<DataBase> newListDataBases = new ArrayList<>();
 
         try {
-            if(path != null){
+            if (path != null) {
                 file = new FileReader(path);
-            }else{
+            } else {
                 file = new FileReader("./src/data/flags/flags.txt");
             }
         } catch (FileNotFoundException e) {
@@ -146,7 +208,7 @@ public class GenerateDataBaseFlags {
             Double[] out;
             DataBase newDataBase;
 
-            while(readFile.ready()){
+            while (readFile.ready()) {
                 datas = readFile.readLine().split(",");
 
                 in = new ArrayList<>();
@@ -177,9 +239,9 @@ public class GenerateDataBaseFlags {
             System.out.println("Error: " + e);
         }
 
-        if(path != null){
+        if (path != null) {
             return newListDataBases;
-        }else{
+        } else {
             this.dataBase = newListDataBases;
             return null;
         }

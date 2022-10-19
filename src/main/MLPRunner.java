@@ -14,6 +14,13 @@ public class MLPRunner {
     public static void main(String[] args) throws Exception {
 
         /*
+         * 
+         * Variaveis de Controle 
+         */
+
+         boolean balancing = true;
+
+        /*
          *
          * Default Bases
          */
@@ -27,12 +34,15 @@ public class MLPRunner {
          * Flags Bases
          */
 
-        GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags();
+        GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags(balancing);
 
-        // generateDataBase.generateDataBasesDistributed();
+        // Gerar as bases distribuidas   
+        generateDataBase.generateDataBasesDistributed();
 
+        // Gerar base não distribuida
         // DataBase[] dataBase = generateDataBase.generateDataBase(null);
 
+        // Ler bases distribuidas
         List<DataBase> dataBaseTreino = generateDataBase.generateDataBase("./src/data/flags/bases/base75.txt");
         List<DataBase> dataBaseTeste = generateDataBase.generateDataBase("./src/data/flags/bases/base25.txt");
 

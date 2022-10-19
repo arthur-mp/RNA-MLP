@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch MLPRunner",
+            "request": "launch",
+            "mainClass": "main.MLPRunner",
+            "projectName": "RNA-MLP_a0f23947"
+        },
+        {
+            "type": "java",
             "name": "Launch Teste",
             "request": "launch",
             "mainClass": "utils.Teste",
