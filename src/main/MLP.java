@@ -21,13 +21,19 @@ public class MLP {
     private final static double Range_Max = 0.03;
     private final static double Range_Min = -0.03;
 
-    public MLP(int amountInput, int amountOutput, int amountNeuronsIntermediary, double ni) {
+    private boolean valueDesiredShited;
+    private final static double limitMax = 0.95;
+    private final static double limitMin = 0.05;
+
+    public MLP(int amountInput, int amountOutput, int amountNeuronsIntermediary, double ni,
+            boolean valueDesiredShited) {
         this.ni = ni;
         this.amountInput = amountInput;
         this.amountOutput = amountOutput;
         this.amountNeuronsIntermediary = amountNeuronsIntermediary;
         wH = new double[amountInput + 1][amountNeuronsIntermediary];
         wO = new double[amountNeuronsIntermediary + 1][amountOutput];
+        this.valueDesiredShited = valueDesiredShited;
         generateRandoWO();
         generateRandoWH();
     }
@@ -53,7 +59,7 @@ public class MLP {
     }
 
     public double[] learn(Double[] xIn, Double[] y) {
-        
+
         double[] out = execute(xIn);
 
         /*
@@ -61,37 +67,36 @@ public class MLP {
          */
         double[] deltaOut = new double[amountOutput];
 
-        for(int j = 0; j < amountOutput; j++){
+        for (int j = 0; j < amountOutput; j++) {
             deltaOut[j] = (out[j] * (1 - out[j]) * (y[j] - out[j]));
         }
 
         double[] deltaH = new double[amountNeuronsIntermediary];
 
-        for(int h = 0; h < amountNeuronsIntermediary; h++){
+        for (int h = 0; h < amountNeuronsIntermediary; h++) {
             double sum = 0;
 
-            for(int j = 0; j < amountOutput; j++){
+            for (int j = 0; j < amountOutput; j++) {
                 sum += deltaOut[j] * wO[h][j];
             }
 
-            deltaH[h] = H[h] * ( 1 - H[h]) * sum;
+            deltaH[h] = H[h] * (1 - H[h]) * sum;
         }
 
         /*
          * Ajuste dos pesos da camada intermediária
          */
-        for(int i = 0; i < amountInput; i++){
-            for(int h = 0; h < amountNeuronsIntermediary; h++){
+        for (int i = 0; i < amountInput; i++) {
+            for (int h = 0; h < amountNeuronsIntermediary; h++) {
                 wH[i][h] += (ni * deltaH[h] * x[i]);
             }
         }
 
-
         /*
          * Ajuste dos pesos da saída
          */
-        for(int h = 0; h < amountNeuronsIntermediary; h++){
-            for(int o = 0; o < amountOutput; o++){
+        for (int h = 0; h < amountNeuronsIntermediary; h++) {
+            for (int o = 0; o < amountOutput; o++) {
                 wO[h][o] += (ni * deltaOut[o] * H[h]);
             }
         }
@@ -99,8 +104,7 @@ public class MLP {
         return out;
     }
 
-
-    public double[] execute(Double[] xIn){
+    public double[] execute(Double[] xIn) {
         /*
          * Copia do xIn para o x
          */
@@ -109,6 +113,7 @@ public class MLP {
         for (int i = 0; i < xIn.length; i++) {
             x[i] = xIn[i];
         }
+        // Acrescenta o Bias
         x[x.length - 1] = 1;
 
         /*
@@ -122,11 +127,10 @@ public class MLP {
                 H[j] += (x[i] * wH[i][j]);
             }
 
-            H[j] = FunctionActivation.sigmoidal(H[j]);
+            H[j] = checkValueDesiredShited(FunctionActivation.sigmoidal(H[j]));
         }
 
         H[H.length - 1] = 1;
-
 
         /*
          * Calcula a saída obtida
@@ -138,7 +142,7 @@ public class MLP {
                 out[j] += H[i] * wO[i][j];
             }
 
-            out[j] = FunctionActivation.sigmoidal(out[j]);
+            out[j] = checkValueDesiredShited(FunctionActivation.sigmoidal(out[j]));
         }
 
         return out;
@@ -146,5 +150,18 @@ public class MLP {
 
     public double[][] getWO() {
         return wO;
+    }
+
+    public double checkValueDesiredShited(double resultSigmoidal) {
+        if (valueDesiredShited) {
+            if (resultSigmoidal == 1.0)
+                return limitMax;
+            else if (resultSigmoidal == 0.0)
+                return limitMin;
+            else
+                return resultSigmoidal;
+
+        } else
+            return resultSigmoidal;
     }
 }

@@ -15,10 +15,23 @@ public class MLPRunner {
 
         /*
          * 
-         * Variaveis de Controle 
+         * Variaveis de Controle
          */
 
-         boolean balancing = true;
+        // Controle dos valores de entrada
+
+            // Balanceamento de classes
+            boolean balancing = false;
+
+            // Normalização da base
+            boolean standardization = false;
+
+        // Controlo dos valores de saída
+
+            // Valor desejado deslocado
+            boolean valueDesiredShited = true;
+            double limitMax = 0.995;
+            double limitMin = 0.005;
 
         /*
          *
@@ -36,7 +49,7 @@ public class MLPRunner {
 
         GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags(balancing);
 
-        // Gerar as bases distribuidas   
+        // Gerar as bases distribuidas
         generateDataBase.generateDataBasesDistributed();
 
         // Gerar base não distribuida
@@ -49,7 +62,8 @@ public class MLPRunner {
         int neuronsIntermediary = 16;
         double ni = 0.001;
 
-        MLP p = new MLP(dataBaseTreino.get(0).getX().length, dataBaseTreino.get(0).getY().length, neuronsIntermediary, ni);
+        MLP p = new MLP(dataBaseTreino.get(0).getX().length, dataBaseTreino.get(0).getY().length, neuronsIntermediary,
+                ni, valueDesiredShited);
 
         /*
          * Abreviações:
@@ -96,7 +110,7 @@ public class MLPRunner {
                 erroEpTreino += erroAmTreino;
                 erroAmTreino = 0;
 
-                erroClAmTreino = erroCl(y, out);
+                erroClAmTreino = erroCl(y, out, valueDesiredShited, limitMax, limitMin);
                 erroClEpTreino += erroClAmTreino;
             }
 
@@ -113,14 +127,15 @@ public class MLPRunner {
                 erroEpTeste += erroAmTeste;
                 erroAmTeste = 0;
 
-                erroClAmTeste = erroCl(y, out);
+                erroClAmTeste = erroCl(y, out, valueDesiredShited, limitMax, limitMin);
                 erroClEpTeste += erroClAmTeste;
             }
 
-            System.out.println(e +"\t"+"ErroEpTreino: "+ erroEpTreino +"\t"+"ErroClEpTreino: "+ erroClEpTreino+"\t"+"ErroEpTeste: "+ erroEpTeste+"\t"+"ErroClEpTeste: "+ erroClEpTeste);
+            System.out.println(e + "\t" + "ErroEpTreino: " + erroEpTreino + "\t" + "ErroClEpTreino: " + erroClEpTreino
+                    + "\t" + "ErroEpTeste: " + erroEpTeste + "\t" + "ErroClEpTeste: " + erroClEpTeste);
 
-            dataTreino.add("" + (e + 1) + " "+erroEpTreino + "");
-            dataTeste.add("" + (e + 1) + " "+erroEpTeste + "");
+            dataTreino.add("" + (e + 1) + " " + erroEpTreino + "");
+            dataTeste.add("" + (e + 1) + " " + erroEpTeste + "");
 
             erroClEpTreino = (erroClEpTreino / dataBaseTreino.size());
             erroClEpTeste = (erroClEpTeste / dataBaseTeste.size());
@@ -136,17 +151,23 @@ public class MLPRunner {
         FunctionsFile.createFile("./src/data/flags/bases/erroClassificacaoTeste.dat", dataClTeste);
     }
 
-    public static int erroCl(Double[] y, double[] out){
+    public static double erroCl(Double[] y, double[] out, boolean valueDesiredShited, double limitMax, double limitMin) {
 
         double[] outThreshold = new double[out.length];
 
         double threshold = 0.5;
-        
+
         for (int i = 0; i < out.length; i++) {
-            if(out[i] >= threshold){
-                outThreshold[i] = 1;
-            }else{
-                outThreshold[i] = 0;
+            if (out[i] >= threshold) {
+                if (valueDesiredShited)
+                    outThreshold[i] = limitMax;
+                else
+                    outThreshold[i] = 1;
+            } else {
+                if (valueDesiredShited)
+                    outThreshold[i] = limitMin;
+                else
+                    outThreshold[i] = 0;
             }
         }
 
@@ -156,28 +177,38 @@ public class MLPRunner {
             sumOutY += Math.abs(outThreshold[j] - y[j]);
         }
 
-        if(sumOutY > 0) return 1;
-        else return 0;
+        if (sumOutY > 0)
+            if(valueDesiredShited) return limitMax;
+            else return 1;
+        else
+            if(valueDesiredShited) return limitMin;
+            else return 0;
     }
 
-    public static int erroCl2(Double[] y, double[] out){
+    public static double erroCl2(Double[] y, double[] out, boolean valueDesiredShited, double limitMax, double limitMin) {
 
         double[] outThreshold = new double[out.length];
 
         int threshold = 0;
         double valueThreshold = outThreshold[0];
-        
+
         for (int i = 1; i < outThreshold.length; i++) {
-            if(outThreshold[i] > valueThreshold){
+            if (outThreshold[i] > valueThreshold) {
                 threshold = i;
             }
         }
 
         for (int i = 0; i < outThreshold.length; i++) {
-            if(i == threshold){
-                outThreshold[i] = 1.0;
-            }else{
-                outThreshold[i] = 0.0;
+            if (i == threshold) {
+                if (valueDesiredShited)
+                    outThreshold[i] = limitMax;
+                else
+                    outThreshold[i] = 1;
+            } else {
+                if (valueDesiredShited)
+                    outThreshold[i] = limitMin;
+                else
+                    outThreshold[i] = 0;
             }
         }
 
@@ -187,7 +218,11 @@ public class MLPRunner {
             sumOutY += Math.abs(outThreshold[j] - y[j]);
         }
 
-        if(sumOutY > 0) return 1;
-        else return 0;
+        if (sumOutY > 0)
+            if(valueDesiredShited) return limitMax;
+            else return 1;
+        else
+            if(valueDesiredShited) return limitMin;
+            else return 0;
     }
 }
