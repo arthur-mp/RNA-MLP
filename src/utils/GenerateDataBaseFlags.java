@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import models.FunctionActivation;
+
 public class GenerateDataBaseFlags {
     private List<DataBase> dataBase;
     private Map<String, Double[]> hashReligions;
@@ -22,17 +24,24 @@ public class GenerateDataBaseFlags {
     private final int instances = 194;
     private final int colNeuron = 6;
     private final boolean balancing;
+    private final boolean normalization;
+    private Map<String, DataBase> baseNormalized;
 
-    public GenerateDataBaseFlags(boolean balancing) {
+    public GenerateDataBaseFlags(boolean balancing, boolean normalization) {
         this.dataBase = new ArrayList<>();
         this.balancing = balancing;
+        this.normalization = normalization;
+        baseNormalized = new HashMap<>();
+        createHashReligions();
+        createHashColors();
     }
 
     public List<DataBase> generateDataBase(String path) {
-        createHashReligions();
-        createHashColors();
         List<DataBase> listDataBase = readDataBase(path);
         if (listDataBase != null) {
+            if(normalization){
+                listDataBase = convertToNormalizad(listDataBase);
+            }
             return listDataBase;
         }
         return this.dataBase;
@@ -66,6 +75,29 @@ public class GenerateDataBaseFlags {
 
                 int index = Integer.parseInt(datas[colNeuron]);
                 basesDistributed.get(index).add(data);
+
+                if (normalization) {
+                    List<Double> in = new ArrayList<>();
+                    Double[] out = new Double[this.lengthY];
+                    DataBase newDataBase;
+                    for (int j = 1; j < datas.length; j++) {
+                        if (j == this.colNeuron) {
+                            out = (this.hashReligions.get(datas[j]));
+                        } else {
+
+                            if (this.hashColors.containsKey(datas[j])) {
+                                in.add(this.hashColors.get(datas[j]));
+                            } else {
+                                in.add(Double.parseDouble(datas[j]));
+                            }
+                        }
+                    }
+                    newDataBase = new DataBase(
+                            in.toArray(new Double[in.size()]),
+                            out, datas[0]);
+
+                    baseNormalized.put(datas[0], newDataBase);
+                }
             }
 
         } catch (Exception e) {
@@ -73,6 +105,8 @@ public class GenerateDataBaseFlags {
         }
 
         createDataBases(basesDistributed);
+        if (normalization)
+            createBaseNormalized();
     }
 
     private void createDataBases(List<List<String>> basesDistributed) {
@@ -140,10 +174,10 @@ public class GenerateDataBaseFlags {
                 int index = 0;
                 final int indexFinal = baseDistributed75.get(i).size();
                 for (int j = baseDistributed75.get(i).size(); j < baseDistributed75.get(biggerCategory).size(); j++) {
-                    if(index < indexFinal){
+                    if (index < indexFinal) {
                         baseDistributed75.get(i).add(baseDistributed75.get(i).get(index));
                         index++;
-                    }else{
+                    } else {
                         index = 0;
                         baseDistributed75.get(i).add(baseDistributed75.get(i).get(index));
                         index++;
@@ -152,7 +186,7 @@ public class GenerateDataBaseFlags {
             }
         }
 
-        for(int i = 0; i < baseDistributed75.size(); i++){
+        for (int i = 0; i < baseDistributed75.size(); i++) {
             for (int j = 0; j < baseDistributed75.get(i).size(); j++) {
                 base75.add(baseDistributed75.get(i).get(j));
             }
@@ -230,7 +264,7 @@ public class GenerateDataBaseFlags {
 
                 newDataBase = new DataBase(
                         in.toArray(new Double[in.size()]),
-                        out);
+                        out, datas[0]);
 
                 newListDataBases.add(newDataBase);
             }
@@ -322,5 +356,44 @@ public class GenerateDataBaseFlags {
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
+    }
+
+    // Gera um map com a base normalizada
+    private void createBaseNormalized() {
+        List<DataBase> listDataBase = new ArrayList<>();
+        for (Map.Entry<String, DataBase> value : baseNormalized.entrySet()) {
+            listDataBase.add(value.getValue());
+        }
+
+        int columns = listDataBase.get(0).getX().length;
+
+        for (int i = 0; i < columns; i++) {
+            double max = listDataBase.get(0).getX()[i];
+            double min = listDataBase.get(0).getX()[i];
+
+            for (int j = 1; j < listDataBase.size(); j++) {
+                if (listDataBase.get(j).getX()[i] > max) {
+                    max = listDataBase.get(j).getX()[i];
+                }
+                if (listDataBase.get(j).getX()[i] < min) {
+                    min = listDataBase.get(j).getX()[i];
+                }
+            }
+
+            for (int j = 0; j < listDataBase.size(); j++) {
+                double newValue = FunctionActivation.normalization(listDataBase.get(j).getX()[i], max, min);
+                listDataBase.get(j).setXIndex(i, newValue);
+            }
+
+        }
+
+    }
+
+    private List<DataBase> convertToNormalizad(List<DataBase> listDataBases){
+        for (int i = 0; i < listDataBases.size(); i++) {
+            listDataBases.get(i).setX(baseNormalized.get(listDataBases.get(i).getId()).getX());
+        }
+
+        return listDataBases;
     }
 }

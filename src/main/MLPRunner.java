@@ -24,14 +24,17 @@ public class MLPRunner {
             boolean balancing = false;
 
             // Normalização da base
-            boolean standardization = false;
+            boolean normalization = true;
 
-        // Controlo dos valores de saída
+        // Controle dos valores de saída
 
             // Valor desejado deslocado
             boolean valueDesiredShited = true;
             double limitMax = 0.995;
             double limitMin = 0.005;
+
+            // Erro quadrático
+            boolean quadraticError = false;
 
         /*
          *
@@ -47,7 +50,7 @@ public class MLPRunner {
          * Flags Bases
          */
 
-        GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags(balancing);
+        GenerateDataBaseFlags generateDataBase = new GenerateDataBaseFlags(balancing, normalization);
 
         // Gerar as bases distribuidas
         generateDataBase.generateDataBasesDistributed();
@@ -63,7 +66,7 @@ public class MLPRunner {
         double ni = 0.001;
 
         MLP p = new MLP(dataBaseTreino.get(0).getX().length, dataBaseTreino.get(0).getY().length, neuronsIntermediary,
-                ni, valueDesiredShited);
+                ni, valueDesiredShited, quadraticError);
 
         /*
          * Abreviações:
@@ -104,7 +107,11 @@ public class MLPRunner {
                 double[] out = p.learn(x, y);
 
                 for (int j = 0; j < out.length; j++) {
-                    erroAmTreino += Math.abs(y[j] - out[j]);
+                    if(quadraticError){
+                        erroAmTreino += Math.pow((y[j] - out[j]), 2);
+                    }else{
+                        erroAmTreino += Math.abs(y[j] - out[j]);
+                    }
                 }
 
                 erroEpTreino += erroAmTreino;
@@ -121,7 +128,11 @@ public class MLPRunner {
                 double[] out = p.execute(x);
 
                 for (int j = 0; j < out.length; j++) {
-                    erroAmTeste += Math.abs(y[j] - out[j]);
+                    if(quadraticError){
+                        erroAmTeste += Math.pow((y[j] - out[j]), 2);
+                    }else{
+                        erroAmTeste += Math.abs(y[j] - out[j]);
+                    }
                 }
 
                 erroEpTeste += erroAmTeste;
@@ -174,6 +185,12 @@ public class MLPRunner {
         double sumOutY = 0;
 
         for (int j = 0; j < out.length; j++) {
+            if(y[j] == 1){
+                y[j] = limitMax;
+            }
+            if(y[j] == 0){
+                y[j] = limitMin;
+            }
             sumOutY += Math.abs(outThreshold[j] - y[j]);
         }
 

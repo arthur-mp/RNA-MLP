@@ -25,8 +25,10 @@ public class MLP {
     private final static double limitMax = 0.95;
     private final static double limitMin = 0.05;
 
+    private boolean quadraticError;
+
     public MLP(int amountInput, int amountOutput, int amountNeuronsIntermediary, double ni,
-            boolean valueDesiredShited) {
+            boolean valueDesiredShited, boolean quadraticError) {
         this.ni = ni;
         this.amountInput = amountInput;
         this.amountOutput = amountOutput;
@@ -36,6 +38,7 @@ public class MLP {
         this.valueDesiredShited = valueDesiredShited;
         generateRandoWO();
         generateRandoWH();
+        this.quadraticError = quadraticError;
     }
 
     private void generateRandoWO() {
@@ -68,7 +71,16 @@ public class MLP {
         double[] deltaOut = new double[amountOutput];
 
         for (int j = 0; j < amountOutput; j++) {
-            deltaOut[j] = (out[j] * (1 - out[j]) * (y[j] - out[j]));
+            if(quadraticError){
+                int sinal = 1;
+                if((y[j] - out[j]) < 0){
+                    sinal = -1;
+                }
+                deltaOut[j] = (out[j] * (1 - out[j]) * Math.pow((y[j] - out[j]), 2) * sinal);
+            }else{
+                deltaOut[j] = (out[j] * (1 - out[j]) * (y[j] - out[j]));
+            }
+            
         }
 
         double[] deltaH = new double[amountNeuronsIntermediary];
